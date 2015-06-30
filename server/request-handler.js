@@ -15,24 +15,8 @@ var resultObj = {};
 resultObj.results = [];
 
 exports.requestHandler = function(request, response) {
-  // Request and Response come from node's http module.
-  //
-  // They include information about both the incoming request, such as
-  // headers and URL, and about the outgoing response, such as its status
-  // and content.
-  //
-  // Documentation for both request and response can be found in the HTTP section at
-  // http://nodejs.org/documentation/api/
 
-  // Do some basic logging.
-  //
-  // Adding more logging to your server can be an easy way to get passive
-  // debugging help, but you should always be careful about leaving stray
-  // console.logs in your code.
   console.log("Serving request type " + request.method + " for url " + request.url);
-
-
-
 
   var statusCode;
   var body = "";
@@ -45,16 +29,14 @@ exports.requestHandler = function(request, response) {
   };
 
   var headers = defaultCorsHeaders;
-  // Tell the client we are sending them plain text.
-  //
-  // You will need to change this if you are sending something
-  // other than plain text, like JSON or HTML.
+
   headers['Content-Type'] = "application/json";
-
-  // .writeHead() writes to the request line and headers of the response,
-  // which includes the status and all headers.
-
-
+  //Check to see if url is correct
+  if (request.url !== '/classes/messages') {
+    statusCode = 404;
+    response.writeHead(statusCode, headers);
+    response.end(JSON.stringify({success: false}));
+  }
   // The outgoing status.
   if(request.method === 'POST') {
      statusCode = 201;
@@ -63,27 +45,16 @@ exports.requestHandler = function(request, response) {
        body += chunk;
      });
 
-     var requestData = {
-       message: '',
-       username: ''
-     };
-
      request.on('end', function() {
-
        var parsedBody = JSON.parse(body);
-
-       console.log(parsedBody);
-
        resultObj.results.push(parsedBody);
-       response.end(JSON.stringify({succes: true}));
-
+       response.end(JSON.stringify({success: true}));
      });
   }
 
   else if(request.method === 'GET') {
-    statusCode = 200
+    statusCode = 200;
     response.writeHead(statusCode, headers);
-    console.log(JSON.stringify(resultObj))
     response.end(JSON.stringify(resultObj));
   }
 };
